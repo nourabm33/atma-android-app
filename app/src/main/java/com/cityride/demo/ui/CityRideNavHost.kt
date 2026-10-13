@@ -53,9 +53,10 @@ private object Routes {
     const val PROFILE = "profile"
     const val SCANNER = "scanner"
     const val ACTIVATE = "activate/{id}"
-    const val TICKET = "ticket/{id}?inspector={inspector}"
+    const val TICKET = "ticket/{id}?inspector={inspector}&intro={intro}"
     fun activate(id: String) = "activate/$id"
-    fun ticket(id: String, inspector: Boolean = false) = "ticket/$id?inspector=$inspector"
+    fun ticket(id: String, inspector: Boolean = false, intro: Boolean = false) =
+        "ticket/$id?inspector=$inspector&intro=$intro"
 }
 
 private val tabs = listOf(Routes.HOME, Routes.ACQUISTA, Routes.TICKETS, Routes.PROFILE)
@@ -103,7 +104,7 @@ fun CityRideNavHost(viewModel: AppViewModel) {
                     onBack = { nav.popBackStack() },
                     onScanned = { _, bus ->
                         viewModel.activate(id, bus) { activatedId ->
-                            nav.navigate(Routes.ticket(activatedId)) { popUpTo(Routes.TICKETS) }
+                            nav.navigate(Routes.ticket(activatedId, intro = true)) { popUpTo(Routes.TICKETS) }
                         }
                     },
                 )
@@ -113,12 +114,14 @@ fun CityRideNavHost(viewModel: AppViewModel) {
                 arguments = listOf(
                     navArgument("id") { type = NavType.StringType },
                     navArgument("inspector") { type = NavType.BoolType; defaultValue = false },
+                    navArgument("intro") { type = NavType.BoolType; defaultValue = false },
                 ),
             ) { entry ->
                 val id = entry.arguments?.getString("id").orEmpty()
                 val inspector = entry.arguments?.getBoolean("inspector") ?: false
+                val intro = entry.arguments?.getBoolean("intro") ?: false
                 val ticket by remember(id) { viewModel.ticket(id) }.collectAsStateWithLifecycle()
-                ActiveTicketScreen(ticket, inspectorMode = inspector, onBack = { nav.popBackStack() })
+                ActiveTicketScreen(ticket, inspectorMode = inspector, playIntro = intro, onBack = { nav.popBackStack() })
             }
             composable(Routes.SCANNER) {
                 ScannerScreen(

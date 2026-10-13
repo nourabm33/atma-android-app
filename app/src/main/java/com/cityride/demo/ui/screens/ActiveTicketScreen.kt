@@ -74,7 +74,7 @@ import com.cityride.demo.util.QrCodeGenerator
  * [inspectorMode] adds the VALID TICKET / EXPIRED verdict shown after a scan.
  */
 @Composable
-fun ActiveTicketScreen(ticket: Ticket?, inspectorMode: Boolean, onBack: () -> Unit) {
+fun ActiveTicketScreen(ticket: Ticket?, inspectorMode: Boolean, playIntro: Boolean = false, onBack: () -> Unit) {
     if (ticket == null) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Caricamento…") }
         return
@@ -87,6 +87,7 @@ fun ActiveTicketScreen(ticket: Ticket?, inspectorMode: Boolean, onBack: () -> Un
     val qr = remember(ticket.qrPayload) { ticket.qrPayload?.let { QrCodeGenerator.generate(it) } }
     var expanded by rememberSaveable { mutableStateOf(true) }
     var zoom by remember { mutableStateOf(false) }
+    var showIntro by rememberSaveable { mutableStateOf(playIntro) }
 
     Column(Modifier.fillMaxSize().background(background).statusBarsPadding()) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -104,6 +105,7 @@ fun ActiveTicketScreen(ticket: Ticket?, inspectorMode: Boolean, onBack: () -> Un
             Spacer(Modifier.width(48.dp))
         }
         DemoBanner()
+        Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(14.dp)) {
             if (inspectorMode || !valid) {
                 Verdict(valid, inspectorMode)
@@ -183,6 +185,8 @@ fun ActiveTicketScreen(ticket: Ticket?, inspectorMode: Boolean, onBack: () -> Un
                 }
             }
             Spacer(Modifier.height(24.dp))
+        }
+        if (showIntro && valid) ActivationIntro(ticket) { showIntro = false }
         }
     }
 
