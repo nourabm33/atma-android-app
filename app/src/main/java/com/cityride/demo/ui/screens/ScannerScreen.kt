@@ -1,6 +1,7 @@
 package com.cityride.demo.ui.screens
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -70,15 +71,26 @@ import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
-/** Inspector scanner: any QR code read by the camera opens the ticket screen. */
+/** Any QR code read by the camera triggers [onScanned]; with [requireBusNumber] scans are ignored until a bus number is typed. */
 @Composable
-fun ScannerScreen(onBack: () -> Unit, onScanned: (payload: String, busNumber: String) -> Unit) {
+fun ScannerScreen(
+    onBack: () -> Unit,
+    onScanned: (payload: String, busNumber: String) -> Unit,
+    title: String = "Scanner controllore",
+    requireBusNumber: Boolean = false,
+) {
     val context = LocalContext.current
     var hasPermission by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
     }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { hasPermission = it }
-    LaunchedEffect(Unit) { if (!hasPermission) launcher.launch(Manifest.permission.CAMERA) }
+    LaunchedEffect(Unit) {
+        val prefs = context.getSharedPreferences("scanner", Context.MODE_PRIVATE)
+        if (!hasPermission && !prefs.getBoolean(KEY_CAMERA_ASKED, false)) {
+            prefs.edit().putBoolean(KEY_CAMERA_ASKED, true).apply()
+            launcher.launch(Manifest.permission.CAMERA)
+        }
+    }
 
     var busNumber by rememberSaveable { mutableStateOf("") }
     var manualEntry by remember { mutableStateOf(false) }
@@ -92,7 +104,7 @@ fun ScannerScreen(onBack: () -> Unit, onScanned: (payload: String, busNumber: St
                 Icon(Icons.AutoMirrored.Filled.ArrowBackIos, contentDescription = "Indietro", tint = Color.White)
             }
             Text(
-                "Scanner controllore",
+                title,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
@@ -123,7 +135,9 @@ fun ScannerScreen(onBack: () -> Unit, onScanned: (payload: String, busNumber: St
             ) {
                 if (hasPermission) {
                     CameraPreview { payload ->
-                        if (handled.compareAndSet(false, true)) currentOnScanned(payload, currentBus)
+                        if ((!requireBusNumber || currentBus.isNotBlank()) && handled.compareAndSet(false, true)) {
+                            currentOnScanned(payload, currentBus)
+                        }
                     }
                 } else {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(24.dp)) {
@@ -134,9 +148,12 @@ fun ScannerScreen(onBack: () -> Unit, onScanned: (payload: String, busNumber: St
                 }
             }
             Spacer(Modifier.height(12.dp))
+            val needsBus = requireBusNumber && busNumber.isBlank()
             Text(
-                "Inquadra un QR code: la schermata del ticket si apre automaticamente.",
-                color = CityColors.TextSecondary,
+                if (needsBus) "Inserisci il numero del mezzo, poi inquadra un QR code."
+                else "Inquadra un QR code: la schermata del ticket si apre automaticamente.",
+                color = if (needsBus) CityColors.Accent else CityColors.TextSecondary,
+                fontWeight = if (needsBus) FontWeight.SemiBold else FontWeight.Normal,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -157,7 +174,7 @@ fun ScannerScreen(onBack: () -> Unit, onScanned: (payload: String, busNumber: St
             },
             confirmButton = {
                 TextButton(
-                    enabled = code.isNotBlank(),
+                    enabled = code.isNotBlank() && (!requireBusNumber || busNumber.isNotBlank()),
                     onClick = {
                         manualEntry = false
                         if (handled.compareAndSet(false, true)) onScanned(code.trim(), busNumber)
@@ -168,6 +185,8 @@ fun ScannerScreen(onBack: () -> Unit, onScanned: (payload: String, busNumber: St
         )
     }
 }
+
+private const val KEY_CAMERA_ASKED = "camera_permission_asked"
 
 @Composable
 private fun CameraPreview(onQrCode: (String) -> Unit) {

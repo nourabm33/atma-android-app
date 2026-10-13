@@ -1,6 +1,11 @@
 package com.cityride.demo.ui.screens
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -43,6 +48,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -58,6 +65,8 @@ import com.cityride.demo.ui.components.DemoWatermark
 import com.cityride.demo.ui.components.rememberNow
 import com.cityride.demo.ui.theme.CityColors
 import com.cityride.demo.util.Format
+import kotlin.math.PI
+import kotlin.math.sin
 import com.cityride.demo.util.QrCodeGenerator
 
 /**
@@ -221,19 +230,33 @@ private fun InfoLine(label: String, value: String) {
     )
 }
 
+/** Wave strip that scrolls continuously; the phase is read only in the draw phase, so it never recomposes. */
 @Composable
 private fun Wave(color: Color) {
-    Canvas(Modifier.fillMaxWidth().height(14.dp)) {
-        val path = Path()
-        val step = 24f
-        var x = 0f
-        path.moveTo(0f, size.height / 2)
-        while (x < size.width) {
-            path.quadraticTo(x + step / 4, 0f, x + step / 2, size.height / 2)
-            path.quadraticTo(x + 3 * step / 4, size.height, x + step, size.height / 2)
-            x += step
-        }
-        drawPath(path, color.copy(alpha = 0.45f), style = Stroke(width = 3f))
+    val transition = rememberInfiniteTransition(label = "wave")
+    val phase = transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(durationMillis = 2400, easing = LinearEasing)),
+        label = "wavePhase",
+    )
+    Canvas(Modifier.fillMaxWidth().height(20.dp)) {
+        val wavelength = 28.dp.toPx()
+        val shift = phase.value * wavelength
+        waveLine(wavelength, shift, size.height * 0.38f, color.copy(alpha = 0.22f), 5.dp.toPx())
+        waveLine(wavelength, -shift, size.height * 0.62f, color.copy(alpha = 0.5f), 3.dp.toPx())
     }
 }
 
+private fun DrawScope.waveLine(wavelength: Float, offset: Float, centerY: Float, color: Color, strokeWidth: Float) {
+    val amplitude = size.height * 0.2f
+    val step = 3f
+    val path = Path()
+    var x = 0f
+    path.moveTo(0f, centerY + amplitude * sin(offset / wavelength * 2 * PI).toFloat())
+    while (x < size.width) {
+        x += step
+        path.lineTo(x, centerY + amplitude * sin((x + offset) / wavelength * 2 * PI).toFloat())
+    }
+    drawPath(path, color, style = Stroke(width = strokeWidth, cap = StrokeCap.Round))
+}
