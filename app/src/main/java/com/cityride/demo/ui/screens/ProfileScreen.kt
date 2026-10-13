@@ -36,7 +36,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cityride.demo.domain.model.User
-import com.cityride.demo.ui.components.DemoBanner
 import com.cityride.demo.ui.components.ListRow
 import com.cityride.demo.ui.components.ScreenTitle
 import com.cityride.demo.ui.components.SectionLabel
@@ -46,7 +45,6 @@ import com.cityride.demo.util.Format
 @Composable
 fun ProfileScreen(user: User, onTopUp: () -> Unit, onScanner: () -> Unit) {
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
-        DemoBanner()
         ScreenTitle("Profilo")
         Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(

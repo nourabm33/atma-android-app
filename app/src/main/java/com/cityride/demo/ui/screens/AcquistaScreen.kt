@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.sp
 import com.cityride.demo.domain.model.Catalog
 import com.cityride.demo.domain.model.TicketProduct
 import com.cityride.demo.ui.components.CityRideLogo
-import com.cityride.demo.ui.components.DemoBanner
 import com.cityride.demo.ui.components.ScreenTitle
 import com.cityride.demo.ui.components.SectionLabel
 import com.cityride.demo.ui.theme.CityColors
@@ -44,7 +43,6 @@ import com.cityride.demo.util.Format
 @Composable
 fun AcquistaScreen(onPurchase: (TicketProduct) -> Unit) {
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
-        DemoBanner()
         ScreenTitle("Acquista")
         Row(
             Modifier.fillMaxWidth().background(CityColors.SectionGrey).padding(horizontal = 20.dp, vertical = 16.dp),

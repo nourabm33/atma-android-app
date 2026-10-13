@@ -2,9 +2,6 @@ package com.cityride.demo.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
@@ -34,26 +31,19 @@ fun DemoBanner(modifier: Modifier = Modifier) {
     )
 }
 
-/** Diagonal repeated "DEMO" text drawn over its content. */
+/** One large diagonal "DEMO" mark drawn over its content. */
 @Composable
 fun DemoWatermark(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Box(modifier) {
         content()
-        BoxWithConstraints(Modifier.matchParentSize()) {
-            val rows = (maxHeight.value / 90f).toInt().coerceAtLeast(2)
-            Column(Modifier.fillMaxSize(), verticalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly) {
-                repeat(rows) {
-                    Text(
-                        text = "DEMO   DEMO   DEMO",
-                        modifier = Modifier.fillMaxWidth().wrapContentSize(Alignment.Center).rotate(-28f),
-                        color = Color(0x33D32F2F),
-                        fontWeight = FontWeight.Black,
-                        fontSize = 34.sp,
-                        maxLines = 1,
-                        softWrap = false,
-                    )
-                }
-            }
-        }
+        Text(
+            text = "DEMO",
+            modifier = Modifier.matchParentSize().wrapContentSize(Alignment.Center).rotate(-30f),
+            color = Color(0x2ED32F2F),
+            fontWeight = FontWeight.Black,
+            fontSize = 96.sp,
+            maxLines = 1,
+            softWrap = false,
+        )
     }
 }
