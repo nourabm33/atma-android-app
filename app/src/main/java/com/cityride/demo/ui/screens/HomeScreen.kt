@@ -43,7 +43,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.cityride.demo.ui.components.CityRideLogo
-import com.cityride.demo.ui.components.DemoBanner
 import com.cityride.demo.ui.components.Dots
 import com.cityride.demo.ui.components.SectionLabel
 import com.cityride.demo.ui.theme.CityColors
@@ -78,7 +77,6 @@ fun HomeScreen(
     var noticeIndex by remember { mutableIntStateOf(0) }
 
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState())) {
-        DemoBanner()
         Column(Modifier.fillMaxWidth().background(CityColors.Navy).padding(20.dp)) {
             CityRideLogo(color = Color.White, height = 52.dp)
             Spacer(Modifier.height(22.dp))
