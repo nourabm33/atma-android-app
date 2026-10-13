@@ -1,0 +1,6 @@
+<resources>
+    <style name="Theme.CityRide" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">#FF0B4F8A</item>
+        <item name="android:windowBackground">#FFFFFFFF</item>
+    </style>
+</resources>
