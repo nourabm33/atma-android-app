@@ -38,7 +38,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.cityride.demo.ui.screens.AcquistaScreen
-import com.cityride.demo.ui.screens.ActivationScreen
 import com.cityride.demo.ui.screens.ActiveTicketScreen
 import com.cityride.demo.ui.screens.HomeScreen
 import com.cityride.demo.ui.screens.MyTicketsScreen
@@ -98,12 +97,16 @@ fun CityRideNavHost(viewModel: AppViewModel) {
             }
             composable(Routes.ACTIVATE, arguments = listOf(navArgument("id") { type = NavType.StringType })) { entry ->
                 val id = entry.arguments?.getString("id").orEmpty()
-                val ticket by remember(id) { viewModel.ticket(id) }.collectAsStateWithLifecycle()
-                ActivationScreen(ticket) { bus ->
-                    viewModel.activate(id, bus) { activatedId ->
-                        nav.navigate(Routes.ticket(activatedId)) { popUpTo(Routes.TICKETS) }
-                    }
-                }
+                ScannerScreen(
+                    title = "Attiva ticket",
+                    requireBusNumber = true,
+                    onBack = { nav.popBackStack() },
+                    onScanned = { _, bus ->
+                        viewModel.activate(id, bus) { activatedId ->
+                            nav.navigate(Routes.ticket(activatedId)) { popUpTo(Routes.TICKETS) }
+                        }
+                    },
+                )
             }
             composable(
                 Routes.TICKET,
